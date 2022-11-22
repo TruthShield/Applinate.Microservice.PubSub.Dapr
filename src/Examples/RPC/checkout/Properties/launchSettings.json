@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "checkout": {
+      "commandName": "Project",
+      "commandLineArgs": "dapr run  --app-id checkout --app-protocol http --dapr-http-port 3500 -- dotnet run"
+    },
+    "Profile 1": {
+      "commandName": "Project"
+    }
+  }
+}

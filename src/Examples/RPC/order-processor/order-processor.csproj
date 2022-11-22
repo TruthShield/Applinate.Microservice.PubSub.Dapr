@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Applinate.Microservice.InversionOfControl.Microsoft" Version="0.7.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+	  <PackageReference Include="Man.Dapr.Sidekick.AspNetCore" Version="1.2.1" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\DaprHost\Applinate.Microservice.PubSub.Dapr.Subscriber.csproj" />
+    <ProjectReference Include="..\Orchestrator\Account\Abstractions\Acme.Orchestrate.Account.Abstractions.csproj" />
+    <ProjectReference Include="..\Orchestrator\Account\Implementation\Acme.Orchestrate.Account.Implementation.csproj" />
+  </ItemGroup>
+
+</Project>
