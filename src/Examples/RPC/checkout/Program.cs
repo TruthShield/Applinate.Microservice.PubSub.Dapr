@@ -30,6 +30,15 @@ Command (PubSub dispatch)
 
 var result2 = await new Acme.OrderCommand(65).ExecuteAsync();
 
+Console.WriteLine(result2.Status.IsSuccess);
+
+foreach (var result3 in result2.Status.Messages)
+{
+
+    Console.WriteLine(result3.Value);
+}
+
+
 _ = result2;
 
 Console.WriteLine(

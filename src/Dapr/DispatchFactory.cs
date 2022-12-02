@@ -2,12 +2,15 @@
 namespace Applinate
 {
     using Applinate.PubSub;
+
     using Dapr.Client;
+
     using Newtonsoft.Json;
+
     using System;
-    using System.Net.Http;
-    using System.Text;
+    using System.Text.Encodings.Web;    
     using System.Text.Json.Serialization;
+    using System.Text.Unicode;
 
     public record Order([property: JsonPropertyName("orderId")] int OrderId);
 
@@ -50,36 +53,26 @@ namespace Applinate
         }
 
         private static async Task<TResponse> Publish<TRequest, TResponse>(
-            TRequest request,
-            CancellationToken cancellationToken)
-            where TRequest : class, IReturn<TResponse>
-            where TResponse : class, IHaveResponseStatus
+    TRequest request,
+    CancellationToken cancellationToken)
+    where TRequest : class, IReturn<TResponse>
+    where TResponse : class, IHaveResponseStatus
         {
-            //using var client = new DaprClientBuilder().Build(); // TODO: look into using dapr client here (and Grpc) instead of http
+            using var client = new DaprClientBuilder().Build();
 
-            var baseURL = (Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost") + ":" + (Environment.GetEnvironmentVariable("DAPR_HTTP_PORT") ?? "3500");
-            var client = new HttpClient();
+            string endpointName = PubSubProvider.GetEndpointName<TRequest>();
+            RequestMessage requestMessage = RequestMessage.Build<TRequest, TResponse>(request);
 
-            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("dapr-app-id", "order-processor");
+            client.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(new TextEncoderSettings(UnicodeRanges.All));
+            
+            var response = await client.InvokeMethodAsync<RequestMessage, ResponseMessage>("order-processor", endpointName, requestMessage, cancellationToken);
 
-            var endpointName   = PubSubProvider.GetEndpointName<TRequest>();
-            var requestMessage = RequestMessage.Build<TRequest, TResponse>(request);
-            var requestContent = new StringContent(JsonConvert.SerializeObject(requestMessage), Encoding.UTF8, "application/json");
-            var response       = await client.PostAsync($"{baseURL}/{endpointName}", requestContent, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new NotImplementedException(); // UNDONE: handle the serivce failure (throw?)
-            }
-
-            using var respStream = response.Content.ReadAsStream();
-            using var reader     = new StreamReader(respStream);
-            var data             = reader.ReadToEnd();
-            var responseMessage  = JsonConvert.DeserializeObject<ResponseMessage>(data);
-            var result           = JsonConvert.DeserializeObject<TResponse>(responseMessage.Payload) ?? throw new InvalidOperationException($"unable to deserialize {nameof(TResponse)}");
+            var result = JsonConvert.DeserializeObject<TResponse>(response.Payload) ?? throw new InvalidOperationException($"unable to deserialize {nameof(TResponse)}");
 
             return result;
         }
+
+
+
     }
 }

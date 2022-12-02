@@ -21,9 +21,10 @@ namespace Applinate
 
             client2.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-            client2.DefaultRequestHeaders.Add("dapr-app-id", "order-processor");
-
-            var builder = WebApplication.CreateBuilder();
+            //client2.DefaultRequestHeaders.Add("dapr-app-id", "order-processor");
+            client2.DefaultRequestHeaders.Add("dapr-app-id", System.Reflection.Assembly.GetEntryAssembly().GetName().Name);
+            
+                        var builder = WebApplication.CreateBuilder();
 
             builder.Services.AddDaprSidekick();// TODO: configuration?
 
